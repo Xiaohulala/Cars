@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Cars</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body onload='init()'> 
+        <style>
+            #tooltip {
+                opacity: 0;
+                position: absolute;
+                text-align: center;
+                border-radius: 5px;
+                padding: 15px;
+                min-width: 200px;
+                text-align: left;
+                background: whitesmoke;
+                border: 0px;
+            }
+        </style>
+        <br>
+        <div>
+            The slides investigate the relationship between AverageHighwayMPG and AverageCityMPG and other factors that can potentially affect them.
+            <br>
+        </div>
+        <br>
+        <br>
+        <div style="text-align:center">
+            <table style="margin-left:auto;margin-right:auto;">
+                <tr>
+                    <td>
+                        <a href="index.html" class="previous">Previous</a>
+                    </td>
+                    <td></td>
+                    <td>
+                        Page 2/3
+                    </td>
+                    <td></td>
+                    <td>
+                        <a href="third.html" class="next">Next</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <br>
+        <div style="text-align:center">
+            <h2>Fuel Type V.S. MPG</h2>
+            <p style="color:#EDA845">(Select a MPG type to view in the chart)</p>
+            <select id="MPGSelect" title="Select a MPG type to view in the chart">
+                <option value="AverageHighwayMPG">AverageHighwayMPG</option>
+                <option value="AverageCityMPG">AverageCityMPG</option>
+ 
+        
+            </select>
+        
+            <br>
+            <svg width=1200 height=500>
+                <div id="tooltip"></div>
+            </svg>
+        </div>
+        <script>
+            async function init() {
+                const data = await d3.csv("https://raw.githubusercontent.com/Xiaohulala/Cars/master/fuel.csv");
+                var margin = { top: 10, right: 60, bottom: 100, left: 70 },
+                    width = 1200 - margin.left - margin.right,
+                    height = 400 - margin.top - margin.bottom;
+                
+                updateChart("AverageHighwayMPG");
+
+                function updateChart(selected) {
+                    if(selected === "AverageHighwayMPG") {
+                        d3.selectAll("svg > *").remove();
+
+                        var xs = d3.scaleBand()
+                                .domain(["Diesel", "Electricity", "Gasoline"])
+                                .range([0, width]);
+
+                        var ys = d3.scaleLinear()
+                            .domain([0, 110])
+                            .range([height, 0]);
+
+                        hs = d3.scaleLinear()
+                            .domain([0, 110])
+                            .range([0, height]);
+
+                        // Add Y axis label:
+                        d3.select("svg").append("text")
+                            .attr("transform", "translate(-25,20)rotate(-90)")
+                            .attr("text-anchor", "end")
+                            .attr("x", 0)
+                            .attr("y", 60)
+                            .text("Average of AverageHighwayMPG");
+                        
+                        // annotation
+                        // text
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 100)
+                            .attr("y", 25)
+                            .style("fill", "blue")
+                            .text("(Hover over the circles to see more)");
+                        
+                        //line
+                        d3.select("svg").append("line")
+                            .attr("x1", 600)
+                            .attr("y1", 40)
+                            .attr("x2", 700)
+                            .attr("y2", 30)
+                            .style("stroke", "rgb(255,0,0)")
+                            .style("stroke-width", "3");
+                        
+                        // text
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 710)
+                            .attr("y", 32)
+                            .style("fill", "rgb(255,0,0)")
+                            .text("Averagely speaking, cars use electricity have extremely high AverageHighwayMPG");
+
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 710)
+                            .attr("y", 45)
+                            .style("fill", "rgb(255,0,0)")
+                            .text("comparing to those who use gasline and diesel");
+                        
+                        //numbers
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 236)
+                            .attr("y", 210)
+                            .style("fill", "black")
+                            .text("32.5");
+
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 590)
+                            .attr("y", 30)
+                            .style("fill", "black")
+                            .text("101.5");
+                        
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 950)
+                            .attr("y", 225)
+                            .style("fill", "black")
+                            .text("26.7");
+
+                        // tooltip
+                        var tooltip = d3.select("#tooltip");
+
+                        //draw bars
+                        d3.select("svg")
+                            .append("g").attr("transform", "translate(" + (margin.left+158) + "," + (margin.top) + ")")
+                            .selectAll("rect").data(data).enter().append("rect")
+                            .attr("x", function (d) { return xs(d.Fuel)})
+                            .attr("y", function (d) { return ys(parseInt(d.AverageofAverageHighwayMPG))})
+                            .attr("width", 40)
+                            .attr("height", function (d) { return hs(parseInt(d.AverageofAverageHighwayMPG)) })
+                            .attr("fill", function (d) {
+                                if (d.Fuel == "Gasoline") return "#B3E6D5";
+                                else if (d.Fuel == "Electricity") return "#86C95E";
+                                else return "#AA62CB";
+                            })
+                            .attr("stroke", "black")
+                            .on("mouseover", function (d) {
+                                tooltip.style("opacity", 1)
+                                       .style("left", (d3.event.pageX + 30) + "px")
+                                       .style("top", (d3.event.pageY + 30) + "px")
+                                       .html("Average of AverageHighwayMPG: " + d.AverageofAverageHighwayMPG
+                                             + "<br>" + "Average of AverageCityMPG: " + d.AverageofAverageCityMPG);
+                            })
+                            .on("mouseout", function () {
+                                tooltip.style("opacity", 0)
+                            });
+                        
+                        // draw y axis
+                        d3.select("svg").append("g")
+                            .attr("transform", "translate(" + margin.left + "," + (margin.top)+ ")")
+                            .call(d3.axisLeft(ys));
+
+                        // draw x axis
+                        d3.select("svg").append("g")
+                            .attr("transform", "translate(" + margin.left + "," + (height+10) + ")")
+                            .call(d3.axisBottom(xs));
+                    }
+                    else {
+                        d3.selectAll("svg > *").remove();
+
+                        var xs = d3.scaleBand()
+                            .domain(["Diesel", "Electricity", "Gasoline"])
+                            .range([0, width]);
+
+                        var ys = d3.scaleLinear()
+                            .domain([0, 130])
+                            .range([height, 0]);
+
+                        hs = d3.scaleLinear()
+                            .domain([0, 130])
+                            .range([0, height]);
+
+                        // Add Y axis label:
+                        d3.select("svg").append("text")
+                            .attr("transform", "translate(-25,20)rotate(-90)")
+                            .attr("text-anchor", "end")
+                            .attr("x", 0)
+                            .attr("y", 60)
+                            .text("Average of AverageCityMPG");
+
+                        // annotation
+                        // text
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 100)
+                            .attr("y", 25)
+                            .style("fill", "blue")
+                            .text("(Hover over the circles to see more)");
+
+                        //line
+                        d3.select("svg").append("line")
+                            .attr("x1", 600)
+                            .attr("y1", 40)
+                            .attr("x2", 700)
+                            .attr("y2", 30)
+                            .style("stroke", "rgb(255,0,0)")
+                            .style("stroke-width", "3");
+
+                        // text
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 710)
+                            .attr("y", 32)
+                            .style("fill", "rgb(255,0,0)")
+                            .text("Averagely speaking, cars use electricity have extremely high AverageCityMPG");
+
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 710)
+                            .attr("y", 45)
+                            .style("fill", "rgb(255,0,0)")
+                            .text("comparing to those who use gasline and diesel");
+
+                        //numbers
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 236)
+                            .attr("y", 240)
+                            .style("fill", "black")
+                            .text("24.5");
+
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 590)
+                            .attr("y", 30)
+                            .style("fill", "black")
+                            .text("119.2");
+
+                        d3.select("svg").append("text")
+                            .attr("font-size", "smaller")
+                            .attr("x", 950)
+                            .attr("y", 250)
+                            .style("fill", "black")
+                            .text("19.5");
+
+                        // tooltip
+                        var tooltip = d3.select("#tooltip");
+
+                        //draw bars
+                        d3.select("svg")
+                            .append("g").attr("transform", "translate(" + (margin.left + 158) + "," + (margin.top) + ")")
+                            .selectAll("rect").data(data).enter().append("rect")
+                            .attr("x", function (d) { return xs(d.Fuel) })
+                            .attr("y", function (d) { return ys(parseInt(d.AverageofAverageCityMPG)) })
+                            .attr("width", 40)
+                            .attr("height", function (d) { return hs(parseInt(d.AverageofAverageCityMPG)) })
+                            .attr("fill", function (d) {
+                                if (d.Fuel == "Gasoline") return "#B3E6D5";
+                                else if (d.Fuel == "Electricity") return "#86C95E";
+                                else return "#AA62CB";
+                            })
+                            .attr("stroke", "black")
+                            .on("mouseover", function (d) {
+                                tooltip.style("opacity", 1)
+                                    .style("left", (d3.event.pageX + 30) + "px")
+                                    .style("top", (d3.event.pageY + 30) + "px")
+                                    .html("Average of AverageHighwayMPG: " + d.AverageofAverageHighwayMPG
+                                        + "<br>" + "Average of AverageCityMPG: " + d.AverageofAverageCityMPG);
+                            })
+                            .on("mouseout", function () {
+                                tooltip.style("opacity", 0)
+                            });
+
+                        // draw y axis
+                        d3.select("svg").append("g")
+                            .attr("transform", "translate(" + margin.left + "," + (margin.top) + ")")
+                            .call(d3.axisLeft(ys));
+
+                        // draw x axis
+                        d3.select("svg").append("g")
+                            .attr("transform", "translate(" + margin.left + "," + (height + 10) + ")")
+                            .call(d3.axisBottom(xs));
+                    }
+                }
+                    d3.select("#MPGSelect").on("change", function (d) {
+                    // get the selected
+                    var selected = d3.select(this).property("value")
+                    // update chart
+                    updateChart(selected);
+                })
+            }
+
+        </script>
+
+</body>
+</html>
